@@ -3,8 +3,6 @@
 
 #include "hardware/i2c.h"
 #include "ssd1306/ssd1306.h"
-#include "buzzer.h"
-// #include "font.h"
 
 #define I2C_PORT i2c1
 #define I2C_SDA 14
@@ -30,43 +28,6 @@ void display_init(){
     //O display inicia com todos os pixels apagados.
     ssd1306_fill(&ssd, false);
     ssd1306_send_data(&ssd);
-}
-
-void limpa_display(){
-    ssd1306_fill(&ssd, !cor); // Limpa o display
-    ssd1306_send_data(&ssd); // Atualiza o display
-}
-
-void print_display(){
-    
-}
-
-void display_animacao_suspensa(){
-    ssd1306_fill(&ssd, !cor); // Limpa o display
-    ssd1306_draw_string(&ssd, "ANIMACAO", 0, 0);
-    ssd1306_draw_string(&ssd, "SUSPENSA", 0, 20);
-    ssd1306_send_data(&ssd); // Atualiza o display
-}
-
-void display_animacao_cerveja(){
-    ssd1306_fill(&ssd, !cor); // Limpa o display
-    ssd1306_draw_string(&ssd, "ANIMACAO", 0, 0);
-    ssd1306_draw_string(&ssd, "CERVEJA", 0, 20);
-    ssd1306_send_data(&ssd); // Atualiza o display
-}
-
-void display_animacao_relogio(){
-    ssd1306_fill(&ssd, !cor); // Limpa o display
-    ssd1306_draw_string(&ssd, "ANIMACAO", 0, 0);
-    ssd1306_draw_string(&ssd, "RELOGIO", 0, 20);
-    ssd1306_send_data(&ssd); // Atualiza o display
-}
-
-void display_animacao_cobrinha(){
-    ssd1306_fill(&ssd, !cor); // Limpa o display
-    ssd1306_draw_string(&ssd, "ANIMACAO", 0, 0);
-    ssd1306_draw_string(&ssd, "COBRINHA", 0, 20);
-    ssd1306_send_data(&ssd); // Atualiza o display
 }
 
 #endif

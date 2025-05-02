@@ -57,7 +57,7 @@ void vSemaforoTask() {
             // Verde por 3s
             estado_semaforo = VERDE;
             gpio_put(LED_GRENN, 1); gpio_put(LED_RED, 0);
-            vTaskDelay(pdMS_TO_TICKS(5000));
+            vTaskDelay(pdMS_TO_TICKS(4000));
 
             // Amarelo por 1s
             estado_semaforo = AMARELO;
@@ -67,7 +67,7 @@ void vSemaforoTask() {
             // Vermelho por 3s
             estado_semaforo = VERMELHO;
             gpio_put(LED_GRENN, 0); gpio_put(LED_RED, 1);
-            vTaskDelay(pdMS_TO_TICKS(5000));
+            vTaskDelay(pdMS_TO_TICKS(4000));
         } else {
             // Modo noturno: amarelo piscando devagar
             estado_semaforo = AMARELO;
@@ -125,7 +125,6 @@ void vSomTask() {
 }
 
 // TASK DO DISPLAY
-// TASK DO DISPLAY
 void vDisplayTask(){
     display_init();
 
@@ -138,11 +137,11 @@ void vDisplayTask(){
         ssd1306_draw_string(&ssd, (modo_atual == MODO_NORMAL) ? "MODO NORMAL" : "MODO NOTURNO", 0, 0);
 
         // Coordenadas
-        const int x_quad = 4;
-        const int x_texto = 20;
-        const int tam_quad = 10;
+        const int x_quad = 4;      // O X do quadrado será sempre o mesmo
+        const int x_texto = 20;   // Os textos permanecem estáticos
+        const int tam_quad = 10; // Tamanho do quadrado 10x10
 
-        // Y fixos para as linhas
+        // Y para cada texto correspondente a cor e também alterá a posição do quadrado
         const int y_verde    = 16;
         const int y_amarelo  = 30;
         const int y_vermelho = 44;
@@ -152,23 +151,19 @@ void vDisplayTask(){
         ssd1306_draw_string(&ssd, "AMARELO", x_texto, y_amarelo + 2);
         ssd1306_draw_string(&ssd, "VERMELHO", x_texto, y_vermelho + 2);
 
-        // Desenha apenas UM quadrado, no Y correspondente ao estado ativo
+        // Desenha apenas ao lado da cor ativa do semáforo
         int y_quad = 0;
 
-        if (estado_semaforo == VERDE) {
-            y_quad = y_verde;
-        } else if (estado_semaforo == AMARELO) {
-            y_quad = y_amarelo;
-        } else if (estado_semaforo == VERMELHO) {
-            y_quad = y_vermelho;
-        }
+        if (estado_semaforo == VERDE) y_quad = y_verde;
+        else if (estado_semaforo == AMARELO) y_quad = y_amarelo;
+        else if (estado_semaforo == VERMELHO) y_quad = y_vermelho;
 
-        if (mostrar_figura) {
-            ssd1306_rect(&ssd, y_quad, x_quad, tam_quad, tam_quad, 1, 1);
-        }
+        // mostrar_figura varia entre true e false para o quadrado ficar piscando a cada 500 ms
+        if (mostrar_figura)  ssd1306_rect(&ssd, y_quad, x_quad, tam_quad, tam_quad, 1, 1);
 
         ssd1306_send_data(&ssd);
-        mostrar_figura = !mostrar_figura;
+
+        mostrar_figura = !mostrar_figura; // Atualiza o estado para a figura do quadrado ficar piscando
         vTaskDelay(pdMS_TO_TICKS(500));
     }
 }
