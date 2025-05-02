@@ -9,15 +9,6 @@
 volatile bool buzzer_estado = false; // Controla do estado atual do buzzer (ligado ou desligado)
 alarm_id_t buzzer_alarm_id = -1;    // Armazena o ID do alarm ativo (usado para cancelar depois)
 
-// Inicializa o pino do buzzer como saída e garante que comece desligado.
-void buzzer_init() {
-    gpio_init(BUZZER);
-    gpio_set_dir(BUZZER, GPIO_OUT);
-    gpio_put(BUZZER, 0);
-    buzzer_estado = false;
-    buzzer_alarm_id = -1;
-}
-
 // Callback do alarme: alterna o buzzer a cada 2000us (simula ~500Hz)
 int64_t buzzer_alarm_callback(alarm_id_t id, void *user_data) {
     buzzer_estado = !buzzer_estado;
@@ -34,17 +25,22 @@ void buzzer_start_alarm() {
 
 // Para o efeito sonoro do buzzer (se estiver tocando).
 void buzzer_stop_alarm() {
-    if (buzzer_alarm_id >= 0) {             // Só cancela se um alarm estiver ativo
-        cancel_alarm(buzzer_alarm_id);     // Cancela o alarme
-        buzzer_alarm_id = -1;             // Reseta o ID
+    if (buzzer_alarm_id >= 0) {         // Só cancela se um alarm estiver ativo
+        cancel_alarm(buzzer_alarm_id); // Cancela o alarme
+        buzzer_alarm_id = -1;         // Reseta o ID
         gpio_put(BUZZER, 0);         // Desliga fisicamente o buzzer
-        buzzer_estado = false;          // Reseta o estado de controle
+        buzzer_estado = false;      // Reseta o estado de controle
     }
 }
 
 // TASK DO BUZZER 
 void vSomTask() {
-    buzzer_init();
+    gpio_init(BUZZER);
+    gpio_set_dir(BUZZER, GPIO_OUT);
+    gpio_put(BUZZER, 0);
+
+    buzzer_estado = false;
+    buzzer_alarm_id = -1;
 
     while (true) {
         if (modo_atual == MODO_NORMAL) {
@@ -58,13 +54,10 @@ void vSomTask() {
                 break;
                 case AMARELO:
                     // beeps rápidos (atenção)
-                    for (int i = 0; i < 3; i++) {
-                        buzzer_start_alarm();
-                        vTaskDelay(pdMS_TO_TICKS(100));
-                        buzzer_stop_alarm();
-                        vTaskDelay(pdMS_TO_TICKS(100));
-                    }
-                    vTaskDelay(pdMS_TO_TICKS(500));
+                    buzzer_start_alarm();
+                    vTaskDelay(pdMS_TO_TICKS(150));
+                    buzzer_stop_alarm();
+                    vTaskDelay(pdMS_TO_TICKS(450));
                 break;
                 case VERMELHO:
                     // tom contínuo curto (pare)
@@ -77,9 +70,9 @@ void vSomTask() {
         } else {
             // Modo noturno: beep lento a cada 2s
             buzzer_start_alarm();
-            vTaskDelay(pdMS_TO_TICKS(200));
+            vTaskDelay(pdMS_TO_TICKS(300));
             buzzer_stop_alarm();
-            vTaskDelay(pdMS_TO_TICKS(1800));
+            vTaskDelay(pdMS_TO_TICKS(1700));
         }
     }
 }
