@@ -37,7 +37,7 @@ void vBotaoTask() {
 
             printf("Modo alterado: %s\n", modo_atual == MODO_NORMAL ? "Normal" : "Noturno");
             
-            vTaskDelay(pdMS_TO_TICKS(300)); // Debounce simples com delay de 300ms
+            vTaskDelay(pdMS_TO_TICKS(200)); // Debounce de 200ms
         }
         ultimo_estado = estado_atual;
         vTaskDelay(pdMS_TO_TICKS(50)); // Verifica o botão a cada 50ms
@@ -54,17 +54,18 @@ void vSemaforoTask() {
 
     while (true) {
         if (modo_atual == MODO_NORMAL) {
-            // Verde por 3s
             estado_semaforo = VERDE;
             gpio_put(LED_GRENN, 1); gpio_put(LED_RED, 0);
             vTaskDelay(pdMS_TO_TICKS(4000));
 
-            // Amarelo por 1s
+            if (modo_atual != MODO_NORMAL) continue; // Verifica se ainda está no modo normal, se não, altera para o modo norturno 
+
             estado_semaforo = AMARELO;
             gpio_put(LED_GRENN, 1);  gpio_put(LED_RED, 1);
             vTaskDelay(pdMS_TO_TICKS(2000));
 
-            // Vermelho por 3s
+            if (modo_atual != MODO_NORMAL) continue; // Verifica se ainda está no modo normal, se não, altera para o modo norturno 
+
             estado_semaforo = VERMELHO;
             gpio_put(LED_GRENN, 0); gpio_put(LED_RED, 1);
             vTaskDelay(pdMS_TO_TICKS(4000));
