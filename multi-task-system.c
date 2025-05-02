@@ -5,6 +5,7 @@
 #include "task.h"
 #include "lib/buzzer.h"
 #include "lib/display_ssd1306.h"
+#include "lib/matriz_led.h"
 
 // DEFINIÇÕES DOS PINOS
 #define LED_GRENN 11 // GPIO do LED verde
@@ -94,8 +95,7 @@ void vSomTask() {
                     vTaskDelay(pdMS_TO_TICKS(200));
                     buzzer_stop_alarm();
                     vTaskDelay(pdMS_TO_TICKS(800));
-                    break;
-
+                break;
                 case AMARELO:
                     // beeps rápidos (atenção)
                     for (int i = 0; i < 3; i++) {
@@ -105,15 +105,14 @@ void vSomTask() {
                         vTaskDelay(pdMS_TO_TICKS(100));
                     }
                     vTaskDelay(pdMS_TO_TICKS(500));
-                    break;
-
+                break;
                 case VERMELHO:
                     // tom contínuo curto (pare)
                     buzzer_start_alarm();
                     vTaskDelay(pdMS_TO_TICKS(500));
                     buzzer_stop_alarm();
                     vTaskDelay(pdMS_TO_TICKS(1500));
-                    break;
+                break;
             }
         } else {
             // Modo noturno: beep lento a cada 2s
@@ -169,6 +168,39 @@ void vDisplayTask(){
     }
 }
 
+// TASK DA MATRIZ RGB
+void vMatrizTask() {
+    npInit(LED_PIN); // Inicializa a matriz WS2812
+    bool mostrar_figura = true;
+
+    while (1) {
+        npClear(); // Apaga tudo antes de cada ciclo
+
+        if (mostrar_figura) {
+            switch (estado_semaforo) {
+                case VERDE:
+                    npSetLED(getIndex(1, 1), 0, 255, 0); 
+                    npSetLED(getIndex(2, 1), 0, 255, 0);
+                    npSetLED(getIndex(3, 1), 0, 255, 0);
+                break;
+                case AMARELO:
+                    npSetLED(getIndex(1, 2), 255, 255, 0); 
+                    npSetLED(getIndex(2, 2), 255, 255, 0);
+                    npSetLED(getIndex(3, 2), 255, 255, 0);
+                break;
+                case VERMELHO:
+                    npSetLED(getIndex(1, 3), 255, 0, 0);
+                    npSetLED(getIndex(2, 3), 255, 0, 0);
+                    npSetLED(getIndex(3, 3), 255, 0, 0);
+                break;
+            }
+        }
+        npWrite(); // Envia os dados para a matriz
+        mostrar_figura = !mostrar_figura; // alterna o estado de piscar
+        vTaskDelay(pdMS_TO_TICKS(500)); // Pisca a cada 500ms
+    }
+}
+
 // Trecho para modo BOOTSEL com botão B
 #include "pico/bootrom.h"
 #define botaoB 6
@@ -191,6 +223,7 @@ int main() {
     xTaskCreate(vSemaforoTask, "Semaforo", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL);
     xTaskCreate(vSomTask, "Som", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL);
     xTaskCreate(vDisplayTask, "Display", 1024, NULL, tskIDLE_PRIORITY, NULL);
+    xTaskCreate(vMatrizTask, "Matriz", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL);
 
     vTaskStartScheduler(); // Inicia o escalonador do FreeRTOS
 }
