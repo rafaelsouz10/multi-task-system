@@ -47,7 +47,6 @@ void vBotaoTask() {
 
 // TASK DO SEMÁFORO
 void vSemaforoTask() {
-    // Inicializa GPIOs dos LEDs
     gpio_init(LED_GRENN);
     gpio_init(LED_RED);
     gpio_set_dir(LED_GRENN, GPIO_OUT);
@@ -55,32 +54,51 @@ void vSemaforoTask() {
 
     while (true) {
         if (modo_atual == MODO_NORMAL) {
+            // VERDE
             estado_semaforo = VERDE;
             gpio_put(LED_GRENN, 1); gpio_put(LED_RED, 0);
-            vTaskDelay(pdMS_TO_TICKS(4000));
+            for (int i = 0; i < 4000; i += 100) {        // Alternativa para fracionar o tempo de execução dos leds para
+                if (modo_atual != MODO_NORMAL) break;   // não esperar o vtaskdelay (nesse caso 4000 ms) final acabar
+                vTaskDelay(pdMS_TO_TICKS(100));        //  ao mudar para o modo noturno
+            }
+            if (modo_atual != MODO_NORMAL) continue; // Se não estiver no MODO NORMAL, altera para o modo norturno 
 
-            if (modo_atual != MODO_NORMAL) continue; // Verifica se ainda está no modo normal, se não, altera para o modo norturno 
-
+            //AMARELO
             estado_semaforo = AMARELO;
-            gpio_put(LED_GRENN, 1);  gpio_put(LED_RED, 1);
-            vTaskDelay(pdMS_TO_TICKS(2000));
+            gpio_put(LED_GRENN, 1); gpio_put(LED_RED, 1);
+            for (int i = 0; i < 3000; i += 100) {
+                if (modo_atual != MODO_NORMAL) break;
+                vTaskDelay(pdMS_TO_TICKS(100));
+            }
+            if (modo_atual != MODO_NORMAL) continue;
 
-            if (modo_atual != MODO_NORMAL) continue; // Verifica se ainda está no modo normal, se não, altera para o modo norturno 
-
+            // VERMELHO
             estado_semaforo = VERMELHO;
             gpio_put(LED_GRENN, 0); gpio_put(LED_RED, 1);
-            vTaskDelay(pdMS_TO_TICKS(4000));
+            for (int i = 0; i < 4000; i += 100) {
+                if (modo_atual != MODO_NORMAL) break;
+                vTaskDelay(pdMS_TO_TICKS(100));
+            }
+
         } else {
-            // Modo noturno: amarelo piscando devagar
+            // Modo Noturno
             estado_semaforo = AMARELO;
 
-            gpio_put(LED_GRENN, 1);  gpio_put(LED_RED, 1);
-            vTaskDelay(pdMS_TO_TICKS(500));
-            gpio_put(LED_GRENN, 0);  gpio_put(LED_RED, 0);
-            vTaskDelay(pdMS_TO_TICKS(1500));
+            gpio_put(LED_GRENN, 1); gpio_put(LED_RED, 1);
+            for (int i = 0; i < 500; i += 100) {
+                if (modo_atual != MODO_NOTURNO) break;
+                vTaskDelay(pdMS_TO_TICKS(100));
+            }
+
+            gpio_put(LED_GRENN, 0); gpio_put(LED_RED, 0);
+            for (int i = 0; i < 1500; i += 100) {
+                if (modo_atual != MODO_NOTURNO) break;
+                vTaskDelay(pdMS_TO_TICKS(100));
+            }
         }
     }
 }
+
 
 // TASK DO BUZZER 
 void vSomTask() {
