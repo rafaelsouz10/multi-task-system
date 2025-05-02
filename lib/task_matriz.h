@@ -1,3 +1,6 @@
+#ifndef TASK_MATRIZ_H
+#define TASK_MATRIZ_H
+
 #include "hardware/pio.h"
 #include "hardware/clocks.h"
 
@@ -102,3 +105,38 @@ void print_sprite(int matriz[5][5][3]) {
     }
   }
 }
+
+// TASK DA MATRIZ RGB
+void vMatrizTask() {
+  npInit(LED_PIN); // Inicializa a matriz WS2812
+  bool mostrar_figura = true;
+
+  while (1) {
+      npClear(); // Apaga tudo antes de cada ciclo
+
+      if (mostrar_figura) {
+          switch (estado_semaforo) {
+              case VERDE:
+                  npSetLED(getIndex(1, 1), 0, 255, 0); 
+                  npSetLED(getIndex(2, 1), 0, 255, 0);
+                  npSetLED(getIndex(3, 1), 0, 255, 0);
+              break;
+              case AMARELO:
+                  npSetLED(getIndex(1, 2), 255, 255, 0); 
+                  npSetLED(getIndex(2, 2), 255, 255, 0);
+                  npSetLED(getIndex(3, 2), 255, 255, 0);
+              break;
+              case VERMELHO:
+                  npSetLED(getIndex(1, 3), 255, 0, 0);
+                  npSetLED(getIndex(2, 3), 255, 0, 0);
+                  npSetLED(getIndex(3, 3), 255, 0, 0);
+              break;
+          }
+      }
+      npWrite(); // Envia os dados para a matriz
+      mostrar_figura = !mostrar_figura; // alterna o estado de piscar
+      vTaskDelay(pdMS_TO_TICKS(500)); // Pisca a cada 500ms
+  }
+}
+
+#endif
