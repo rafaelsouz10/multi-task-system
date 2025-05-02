@@ -1,15 +1,13 @@
 #ifndef BUZZER_H
 #define BUZZER_H
 
-#include "hardware/structs/timer.h"
-#include "hardware/irq.h"
+#include "hardware/structs/timer.h" // Para usar alarmes via add_alarm_in_us
 
-// Pino do buzzer
 #define BUZZER 21
 
 // Variáveis de controle
-volatile bool buzzer_estado = false;
-alarm_id_t buzzer_alarm_id = -1;
+volatile bool buzzer_estado = false; // Controla do estado atual do buzzer (ligado ou desligado)
+alarm_id_t buzzer_alarm_id = -1;    // Armazena o ID do alarm ativo (usado para cancelar depois)
 
 //Inicializa o pino do buzzer como saída e garante que comece desligado.
 void buzzer_init() {
@@ -29,18 +27,18 @@ int64_t buzzer_alarm_callback(alarm_id_t id, void *user_data) {
 
 //Inicia o efeito sonoro do buzzer (se não estiver tocando).
 void buzzer_start_alarm() {
-    if (buzzer_alarm_id < 0) {
+    if (buzzer_alarm_id < 0) {  // Só agenda se não tiver um alarm ativo
         buzzer_alarm_id = add_alarm_in_us(2000, buzzer_alarm_callback, NULL, true);
     }
 }
 
 ///Para o efeito sonoro do buzzer (se estiver tocando).
 void buzzer_stop_alarm() {
-    if (buzzer_alarm_id >= 0) {
-        cancel_alarm(buzzer_alarm_id);
-        buzzer_alarm_id = -1;
-        gpio_put(BUZZER, 0);
-        buzzer_estado = false;
+    if (buzzer_alarm_id >= 0) {             // Só cancela se um alarm estiver ativo
+        cancel_alarm(buzzer_alarm_id);     // Cancela o alarme
+        buzzer_alarm_id = -1;             // Reseta o ID
+        gpio_put(BUZZER, 0);         // Desliga fisicamente o buzzer
+        buzzer_estado = false;          // Reseta o estado de controle
     }
 }
 
