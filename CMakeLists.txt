@@ -33,7 +33,7 @@ include_directories(${CMAKE_SOURCE_DIR}/lib)
 
 add_executable(${PROJECT_NAME}  
         multi-task-system.c 
-        lib/ssd1306.c # Biblioteca para o display OLED
+        lib/ssd1306/ssd1306.c # Biblioteca para o display OLED
         )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR})

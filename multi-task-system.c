@@ -4,6 +4,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "lib/buzzer.h"
+#include "lib/display_ssd1306.h"
 
 // DEFINIÇÕES DOS PINOS
 #define LED_GRENN 11 // GPIO do LED verde
@@ -123,6 +124,55 @@ void vSomTask() {
     }
 }
 
+// TASK DO DISPLAY
+// TASK DO DISPLAY
+void vDisplayTask(){
+    display_init();
+
+    bool mostrar_figura = true;
+
+    while (true) {
+        ssd1306_fill(&ssd, 0); // limpa o display
+
+        // Modo no topo
+        ssd1306_draw_string(&ssd, (modo_atual == MODO_NORMAL) ? "MODO NORMAL" : "MODO NOTURNO", 0, 0);
+
+        // Coordenadas
+        const int x_quad = 4;
+        const int x_texto = 20;
+        const int tam_quad = 10;
+
+        // Y fixos para as linhas
+        const int y_verde    = 16;
+        const int y_amarelo  = 30;
+        const int y_vermelho = 44;
+
+        // Desenha os nomes sempre
+        ssd1306_draw_string(&ssd, "VERDE", x_texto, y_verde + 2);
+        ssd1306_draw_string(&ssd, "AMARELO", x_texto, y_amarelo + 2);
+        ssd1306_draw_string(&ssd, "VERMELHO", x_texto, y_vermelho + 2);
+
+        // Desenha apenas UM quadrado, no Y correspondente ao estado ativo
+        int y_quad = 0;
+
+        if (estado_semaforo == VERDE) {
+            y_quad = y_verde;
+        } else if (estado_semaforo == AMARELO) {
+            y_quad = y_amarelo;
+        } else if (estado_semaforo == VERMELHO) {
+            y_quad = y_vermelho;
+        }
+
+        if (mostrar_figura) {
+            ssd1306_rect(&ssd, y_quad, x_quad, tam_quad, tam_quad, 1, 1);
+        }
+
+        ssd1306_send_data(&ssd);
+        mostrar_figura = !mostrar_figura;
+        vTaskDelay(pdMS_TO_TICKS(500));
+    }
+}
+
 // Trecho para modo BOOTSEL com botão B
 #include "pico/bootrom.h"
 #define botaoB 6
@@ -144,6 +194,7 @@ int main() {
     xTaskCreate(vBotaoTask, "Botao", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL);
     xTaskCreate(vSemaforoTask, "Semaforo", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL);
     xTaskCreate(vSomTask, "Som", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL);
+    xTaskCreate(vDisplayTask, "Display", 1024, NULL, tskIDLE_PRIORITY, NULL);
 
     vTaskStartScheduler(); // Inicia o escalonador do FreeRTOS
 }
