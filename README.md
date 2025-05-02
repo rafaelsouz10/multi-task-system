@@ -97,6 +97,8 @@ Abaixo está o mapeamento de conexões entre os componentes e a Raspberry Pi Pic
 - **Display:** OLED SSD1306 (I2C)
 - **Botões A e B**
 - **Matriz LED RGB**
+- **Buzzer**
+- **LED RGB**
 
 ---
 
